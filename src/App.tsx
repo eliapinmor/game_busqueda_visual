@@ -1,4 +1,4 @@
-import Game from "./pages/Game.js"
+import {Game} from "./pages/Game.tsx"
 import './App.css'
 
 function App() {

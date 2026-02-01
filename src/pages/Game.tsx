@@ -1,39 +1,31 @@
-import { OrbitControls, Stars, ContactShadows } from '@react-three/drei';
-import { Canvas } from "@react-three/fiber";
+// src/pages/Game.tsx
+import { Scene } from '../features/game-board/components/Scene';
+import { HUD } from '../features/hud/components/HUD.tsx';
+import { useGameLogic } from '../features/game-board/hooks/useGameLogic';
+import { GameOver } from './GameOver.tsx';
 
-export default function Game() {
+export const Game = () => {
+  const { score, timeLeft, levelData, handleObjectClick, isGameOver, errors } = useGameLogic();
+
+  if (isGameOver) {
+    return <GameOver score={score} reason={timeLeft === 0 ? "timeout" : "errors"} />;
+  }
+
   return (
-    <div>
-      <h1>Game Page</h1>
-      <Canvas camera={{ position: [0, 5, 10], fov: 50 }}>
-        {/* --- LUCES --- */}
-        {/* Luz ambiental: Ilumina todo por igual, evita sombras negras puras */}
-        <ambientLight intensity={0.5} /> 
-        
-        {/* Luz direccional: Simula el sol, genera sombras y profundidad */}
-        <directionalLight 
-          position={[10, 10, 5]} 
-          intensity={1} 
-          castShadow 
-        />
-        
-        {/* Luz de punto: Como una bombilla cerca de los objetos */}
-        <pointLight position={[-5, 5, -5]} intensity={0.8} color="lightblue" />
+  <div className="flex flex-col w-screen h-screen overflow-hidden bg-slate-100">
+      {/* El HUD va primero en el orden de React pero con z-10 para estar encima */}
+      <HUD 
+        score={score}
+        timeLeft={timeLeft}
+        targetName={levelData?.target.name}
+        targetImage={levelData?.target.url}
+      />
 
-        {/* --- AYUDAS VISUALES (Opcional para desarrollo) --- */}
-        <Stars radius={100} depth={50} count={5000} factor={4} saturation={0} fade speed={1} />
-        <OrbitControls makeDefault /> {/* Permite rotar y hacer zoom con el ratón */}
-        <gridHelper args={[20, 20]} /> {/* Suelo de referencia */}
-
-        {/* Aquí irán tus objetos */}
-        <mesh position={[0, 0.5, 0]}>
-          <boxGeometry />
-          <meshStandardMaterial color="orange" />
-        </mesh>
-        
-        {/* Sombra en el suelo para realismo */}
-        <ContactShadows position={[0, 0, 0]} opacity={0.4} scale={20} blur={2} far={4.5} />
-      </Canvas>
+      {/* El Canvas de Three.js ocupa todo el fondo */}
+      <Scene 
+        objects={levelData?.allObjects} 
+        onItemClick={handleObjectClick} 
+      />
     </div>
-  )
-}
+  );
+};
